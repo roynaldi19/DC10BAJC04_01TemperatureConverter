@@ -3,6 +3,7 @@ package com.roynaldi19.dc10bajc04_01temperatureconverter
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.core.TwoWayConverter
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -33,13 +34,10 @@ class MainActivity : ComponentActivity() {
                     Column {
                         StatefulTemperatureInput()
                         ConverterApp()
+                        TwoWayConverterApp()
 
                     }
-
-
                 }
-
-
             }
         }
     }
@@ -75,7 +73,6 @@ private fun convertToFahrenheit(celsius: String) =
         (it * 9 / 5) + 32
     }.toString()
 
-
 @Composable
 fun StatelessTemperatureInput(
     input: String,
@@ -95,21 +92,15 @@ fun StatelessTemperatureInput(
             onValueChange = onValueChange
         )
         Text(stringResource(R.string.temperature_fahrenheit, output))
-
     }
-
 }
 
 @Composable
 private fun ConverterApp(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
-    var input by remember {
-        mutableStateOf("")
-    }
-    var output by remember {
-        mutableStateOf("")
-    }
+    var input by remember { mutableStateOf("") }
+    var output by remember { mutableStateOf("") }
     Column(modifier) {
         StatelessTemperatureInput(
             input = input,
@@ -119,9 +110,65 @@ private fun ConverterApp(
                 output = convertToFahrenheit(newInput)
             }
         )
-
     }
 }
+
+enum class Scale(val scaleName: String) {
+    CELSIUS("Celsius"),
+    FAHRENHEIT("Fahrenheit")
+}
+
+@Composable
+fun GeneralTemperatureInput(
+    scale: Scale,
+    input: String,
+    onValueChange: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier) {
+        OutlinedTextField(
+            value = input,
+            label = { Text(stringResource(R.string.enter_temperature, scale.scaleName)) },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            onValueChange = onValueChange,
+        )
+    }
+}
+
+@Composable
+private fun TwoWayConverterApp(
+    modifier: Modifier = Modifier,
+) {
+    var celsius by remember { mutableStateOf("") }
+    var fahrenheit by remember { mutableStateOf("") }
+    Column(modifier.padding(16.dp)) {
+        Text(
+            text = stringResource(R.string.two_way_converter),
+            style = MaterialTheme.typography.h5
+        )
+        GeneralTemperatureInput(
+            scale = Scale.CELSIUS,
+            input = celsius,
+            onValueChange = { newInput ->
+                celsius = newInput
+                fahrenheit = convertToFahrenheit(newInput)
+            }
+        )
+        GeneralTemperatureInput(
+            scale = Scale.FAHRENHEIT,
+            input = fahrenheit,
+            onValueChange = { newInput ->
+                fahrenheit = newInput
+                celsius = convertToCelsius(newInput)
+            }
+        )
+    }
+}
+
+private fun convertToCelsius(fahrenheit: String) =
+    fahrenheit.toDoubleOrNull()?.let {
+        (it - 32) * 5 / 9
+    }.toString()
 
 
 @Preview(showBackground = true)
@@ -135,9 +182,9 @@ fun DefaultPreview() {
             Column {
                 StatefulTemperatureInput()
                 ConverterApp()
+                TwoWayConverterApp()
             }
-
         }
-
     }
 }
+
