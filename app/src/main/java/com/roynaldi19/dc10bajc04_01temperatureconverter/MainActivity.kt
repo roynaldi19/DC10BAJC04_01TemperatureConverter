@@ -30,7 +30,12 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                    StatefulTemperatureInput()
+                    Column {
+                        StatefulTemperatureInput()
+                        ConverterApp()
+
+                    }
+
 
                 }
 
@@ -53,7 +58,7 @@ fun StatefulTemperatureInput(
         )
         OutlinedTextField(
             value = input,
-            label = { Text(stringResource(R.string.enter_celsius))},
+            label = { Text(stringResource(R.string.enter_celsius)) },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             onValueChange = { newInput ->
                 input = newInput
@@ -71,11 +76,68 @@ private fun convertToFahrenheit(celsius: String) =
     }.toString()
 
 
+@Composable
+fun StatelessTemperatureInput(
+    input: String,
+    output: String,
+    onValueChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier.padding(16.dp)) {
+        Text(
+            text = stringResource(R.string.stateless_converter),
+            style = MaterialTheme.typography.h5
+        )
+        OutlinedTextField(
+            value = input,
+            label = { Text(stringResource(id = R.string.enter_celsius)) },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            onValueChange = onValueChange
+        )
+        Text(stringResource(R.string.temperature_fahrenheit, output))
+
+    }
+
+}
+
+@Composable
+private fun ConverterApp(
+    modifier: Modifier = Modifier
+) {
+    var input by remember {
+        mutableStateOf("")
+    }
+    var output by remember {
+        mutableStateOf("")
+    }
+    Column(modifier) {
+        StatelessTemperatureInput(
+            input = input,
+            output = output,
+            onValueChange = { newInput ->
+                input = newInput
+                output = convertToFahrenheit(newInput)
+            }
+        )
+
+    }
+}
+
+
 @Preview(showBackground = true)
 @Composable
 fun DefaultPreview() {
     DC10BAJC04_01TemperatureConverterTheme {
-        StatefulTemperatureInput()
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colors.background
+        ) {
+            Column {
+                StatefulTemperatureInput()
+                ConverterApp()
+            }
+
+        }
 
     }
 }
